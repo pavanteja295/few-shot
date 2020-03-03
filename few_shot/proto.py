@@ -55,7 +55,7 @@ def proto_net_episode(model: Module,
     # Output should have shape (q_queries * k_way, k_way) = (num_queries, k_way)
     distances = pairwise_distances(queries, prototypes, distance)
 
-    # Calculate log p_{phi} (y = k | x)
+    # Calculate log p_{phi} (y = k | x) # just a normal softmax loss
     log_p_y = (-distances).log_softmax(dim=1)
     loss = loss_fn(log_p_y, y)
 

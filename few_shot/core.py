@@ -53,6 +53,8 @@ class NShotTaskSampler(Sampler):
         return self.episodes_per_epoch
 
     def __iter__(self):
+        # for each episode query num_tasks
+        # episodes is similar to len(data loader) and num_tasks is equal to the batchsize
         for _ in range(self.episodes_per_epoch):
             batch = []
 
@@ -129,9 +131,11 @@ class EvaluateFewShot(Callback):
         logs = logs or {}
         seen = 0
         totals = {'loss': 0, self.metric_name: 0}
-        for batch_index, batch in enumerate(self.taskloader):
+        # this would get 80 batches of the test set sampled from NshotSampler
+        for batch_index, batch in enumerate(self.taskloader): # episodes per epochs
             x, y = self.prepare_batch(batch)
-
+            # here x = (n_test + q_test) * k_test y = q_test * k _test
+            # returns loss for the queried samples and probability scores of the queried samples
             loss, y_pred = self.eval_fn(
                 self.model,
                 self.optimiser,
@@ -149,7 +153,8 @@ class EvaluateFewShot(Callback):
 
             totals['loss'] += loss.item() * y_pred.shape[0]
             totals[self.metric_name] += categorical_accuracy(y, y_pred) * y_pred.shape[0]
-
+        # average out total loss and accuracy for how many samples ?
+        # len(self.task_loader) * (k_way * q_test)
         logs[self.prefix + 'loss'] = totals['loss'] / seen
         logs[self.metric_name] = totals[self.metric_name] / seen
 

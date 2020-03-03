@@ -82,7 +82,9 @@ def fit(model: Module, optimiser: Optimizer, loss_fn: Callable, epochs: int, dat
     num_batches = len(dataloader)
     batch_size = dataloader.batch_size
 
+    # default call back averages the bach accuracy and loss
     callbacks = CallbackList([DefaultCallback(), ] + (callbacks or []) + [ProgressBarLogger(), ])
+    # model and all other information has been passed to call back nothing else ot be done during function calls
     callbacks.set_model(model)
     callbacks.set_params({
         'num_batches': num_batches,
@@ -97,6 +99,7 @@ def fit(model: Module, optimiser: Optimizer, loss_fn: Callable, epochs: int, dat
     if verbose:
         print('Begin training...')
 
+    # creates a csv logger file
     callbacks.on_train_begin()
 
     for epoch in range(1, epochs+1):
@@ -104,20 +107,28 @@ def fit(model: Module, optimiser: Optimizer, loss_fn: Callable, epochs: int, dat
 
         epoch_logs = {}
         for batch_index, batch in enumerate(dataloader):
+            # for each new batch create a batch_log
             batch_logs = dict(batch=batch_index, size=(batch_size or 1))
 
+            # this does nothing for protonets except the progress bar
             callbacks.on_batch_begin(batch_index, batch_logs)
-
+            # y here is of shape queries * k-way
+            # y is in [0, k]
+            
             x, y = prepare_batch(batch)
 
+            # what we expect here is a loss for the above batch and the probabolities of the classes predicted
+            # accuracy is determined on queries only
             loss, y_pred = fit_function(model, optimiser, loss_fn, x, y, **fit_function_kwargs)
             batch_logs['loss'] = loss.item()
 
             # Loops through all metrics
+            # for each episode per epoch what is the accuracy that number of corrects / total number of queries
             batch_logs = batch_metrics(model, y_pred, y, metrics, batch_logs)
-
+            # this does nothing protonets except the progess bar
+            # the categorical accuracy and loss we see during train refers to the queried samples accuracy
             callbacks.on_batch_end(batch_index, batch_logs)
-
+        # evalfewshot is run only here after one complete epoch 
         # Run on epoch end
         callbacks.on_epoch_end(epoch, epoch_logs)
 

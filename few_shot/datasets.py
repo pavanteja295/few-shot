@@ -174,7 +174,7 @@ class FashionDataset(Dataset):
         # Quick first pass to find total for tqdm bar
         subset_len = 0
         # import pdb; pdb.set_trace()
-        dataset = 'fashion-dataset-small'
+        dataset = 'fashion-dataset'
         cwd = os.getcwd()
 
         dict_path = os.path.join(cwd,'data', dataset, 'data_fewshot.json')

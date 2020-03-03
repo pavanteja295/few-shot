@@ -14,7 +14,6 @@ from few_shot.callbacks import *
 from few_shot.utils import setup_dirs
 from config import PATH
 
-import pdb; pdb.set_trace()
 setup_dirs()
 assert torch.cuda.is_available()
 device = torch.device('cuda')
@@ -33,9 +32,14 @@ parser.add_argument('--k-train', default=60, type=int)
 parser.add_argument('--k-test', default=5, type=int)
 parser.add_argument('--q-train', default=5, type=int)
 parser.add_argument('--q-test', default=1, type=int)
+parser.add_argument('--exp_name', default='test', type=str)
 args = parser.parse_args()
 
+# import pdb; pdb.set_trace()
+# this parameter is not used for evaluation phase
 evaluation_episodes = 1000
+
+# how many times do we want to iterate over the whole dataset its similar to len(dataloader)
 episodes_per_epoch = 100
 
 if args.dataset == 'omniglot':
@@ -57,7 +61,7 @@ else:
     # add for fashion here
     raise(ValueError, 'Unsupported dataset')
 
-param_str = f'{args.dataset}_nt={args.n_train}_kt={args.k_train}_qt={args.q_train}_' \
+param_str = f' {args.exp_name}_experiment_name_{args.dataset}_nt={args.n_train}_kt={args.k_train}_qt={args.q_train}_' \
             f'nv={args.n_test}_kv={args.k_test}_qv={args.q_test}'
 
 print(param_str)
@@ -66,6 +70,7 @@ print(param_str)
 # Create datasets #
 ###################
 background = dataset_class('background')
+# no batch size for proto nets
 background_taskloader = DataLoader(
     background,
     batch_sampler=NShotTaskSampler(background, episodes_per_epoch, args.n_train, args.k_train, args.q_train),
@@ -74,7 +79,7 @@ background_taskloader = DataLoader(
 evaluation = dataset_class('evaluation')
 evaluation_taskloader = DataLoader(
     evaluation,
-    batch_sampler=NShotTaskSampler(evaluation, episodes_per_epoch, args.n_test, args.k_test, args.q_test),
+    batch_sampler=NShotTaskSampler(evaluation, episodes_per_epoch, args.n_test, args.k_test, args.q_test), # why is qtest needed for protonet i think its not rquired for protonet check it
     num_workers=4
 )
 
@@ -110,7 +115,7 @@ callbacks = [
         k_way=args.k_test,
         q_queries=args.q_test,
         taskloader=evaluation_taskloader,
-        prepare_batch=prepare_nshot_task(args.n_test, args.k_test, args.q_test),
+        prepare_batch=prepare_nshot_task(args.n_test, args.k_test, args.q_test), # n shot task is a simple function that maps classes to [0-k]
         distance=args.distance
     ),
     ModelCheckpoint(
