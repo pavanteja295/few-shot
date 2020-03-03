@@ -1,4 +1,4 @@
-# Few-shot learning for Fashion Products Image dataset
+# (WIP)Few-shot learning for Fashion Products Image dataset
 
 The aim for this repository is to contain clean, readable and tested
 code to reproduce few-shot learning research.
