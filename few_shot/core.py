@@ -170,6 +170,7 @@ def prepare_nshot_task(n: int, k: int, q: int) -> Callable:
 
         TODO: Move to arbitrary device
         """
+        # only query samples have a label
         x, y = batch
         x = x.double().cuda()
         # Create dummy 0-(num_classes - 1) label

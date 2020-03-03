@@ -5,7 +5,7 @@ from torch.optim import Adam
 from torch.utils.data import DataLoader
 import argparse
 
-from few_shot.datasets import OmniglotDataset, MiniImageNet
+from few_shot.datasets import OmniglotDataset, MiniImageNet, FashionDataset
 from few_shot.models import get_few_shot_encoder
 from few_shot.core import NShotTaskSampler, EvaluateFewShot, prepare_nshot_task
 from few_shot.proto import proto_net_episode
@@ -14,7 +14,7 @@ from few_shot.callbacks import *
 from few_shot.utils import setup_dirs
 from config import PATH
 
-
+import pdb; pdb.set_trace()
 setup_dirs()
 assert torch.cuda.is_available()
 device = torch.device('cuda')
@@ -48,7 +48,13 @@ elif args.dataset == 'miniImageNet':
     dataset_class = MiniImageNet
     num_input_channels = 3
     drop_lr_every = 40
+elif args.dataset == 'fashion-dataset':
+    n_epochs = 80
+    dataset_class = FashionDataset
+    num_input_channels = 3
+    drop_lr_every = 40
 else:
+    # add for fashion here
     raise(ValueError, 'Unsupported dataset')
 
 param_str = f'{args.dataset}_nt={args.n_train}_kt={args.k_train}_qt={args.q_train}_' \

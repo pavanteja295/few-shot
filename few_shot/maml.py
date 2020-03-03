@@ -48,7 +48,7 @@ def meta_gradient_step(model: Module,
         train: Whether to update the meta-learner weights at the end of the episode.
         device: Device on which to run computation
     """
-    data_shape = x.shape[2:]
+    data_shape = x.shape[2:] # image shape
     create_graph = (True if order == 2 else False) and train
 
     task_gradients = []
@@ -67,6 +67,7 @@ def meta_gradient_step(model: Module,
         for inner_batch in range(inner_train_steps):
             # Perform update of model weights
             y = create_nshot_task_label(k_way, n_shot).to(device)
+            # no history of forward pass due to functional forward
             logits = model.functional_forward(x_task_train, fast_weights)
             loss = loss_fn(logits, y)
             gradients = torch.autograd.grad(loss, fast_weights.values(), create_graph=create_graph)
@@ -76,7 +77,7 @@ def meta_gradient_step(model: Module,
                 (name, param - inner_lr * grad)
                 for ((name, param), grad) in zip(fast_weights.items(), gradients)
             )
-
+            
         # Do a pass of the model on the validation data from the current task
         y = create_nshot_task_label(k_way, q_queries).to(device)
         logits = model.functional_forward(x_task_val, fast_weights)

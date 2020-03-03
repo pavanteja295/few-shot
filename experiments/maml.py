@@ -31,7 +31,7 @@ parser.add_argument('--k', default=5, type=int)
 parser.add_argument('--q', default=1, type=int)  # Number of examples per class to calculate meta gradients with
 parser.add_argument('--inner-train-steps', default=1, type=int)
 parser.add_argument('--inner-val-steps', default=3, type=int)
-parser.add_argument('--inner-lr', default=0.4, type=float)
+parser.add_argument('--inner-lr', default=0.4, type=float) # much higher learning rate
 parser.add_argument('--meta-lr', default=0.001, type=float)
 parser.add_argument('--meta-batch-size', default=32, type=int)
 parser.add_argument('--order', default=1, type=int)
@@ -60,6 +60,7 @@ print(param_str)
 ###################
 # Create datasets #
 ###################
+
 background = dataset_class('background')
 background_taskloader = DataLoader(
     background,
@@ -79,6 +80,7 @@ evaluation_taskloader = DataLoader(
 ############
 # Training #
 ############
+
 print(f'Training MAML on {args.dataset}...')
 meta_model = FewShotClassifier(num_input_channels, args.k, fc_layer_size).to(device, dtype=torch.double)
 meta_optimiser = torch.optim.Adam(meta_model.parameters(), lr=args.meta_lr)

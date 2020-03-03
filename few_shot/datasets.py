@@ -7,9 +7,16 @@ from tqdm import tqdm
 import pandas as pd
 import numpy as np
 import os
+import json
 
-from config import DATA_PATH
+from config import DATA_PATH, DATA_PATH_Fashion
 
+def pad_(dh, dw, img):
+    delta_h = max(dh - img.size[1], 0)
+    delta_w = max(dw - img.size[0], 0 )
+    padding = (delta_w//2, delta_h//2, delta_w-(delta_w//2), delta_h-(delta_h//2))                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                  
+    new_im = ImageOps.expand(img, padding)
+    return new_im
 
 class OmniglotDataset(Dataset):
     def __init__(self, subset):
@@ -80,6 +87,7 @@ class OmniglotDataset(Dataset):
             alphabet = root.split('/')[-2]
             class_name = '{}.{}'.format(alphabet, root.split('/')[-1])
 
+            # to which character it belongs wha is the alphabet is stored
             for f in files:
                 progress_bar.update(1)
                 images.append({
@@ -91,6 +99,96 @@ class OmniglotDataset(Dataset):
 
         progress_bar.close()
         return images
+
+class FashionDataset(Dataset):
+    def __init__(self, subset):
+        """Dataset class representing miniImageNet dataset
+
+        # Arguments:
+            subset: Whether the dataset represents the background or evaluation set
+        """
+        if subset not in ('background', 'evaluation'):
+            raise(ValueError, 'subset must be one of (background, evaluation)')
+        self.subset = subset
+
+        self.df = pd.DataFrame(self.index_subset(self.subset))
+        # Index of dataframe has direct correspondence to item in dataset
+        self.df = self.df.assign(id=self.df.index.values)
+
+        # Convert arbitrary class names of dataset to ordered 0-(num_speakers - 1) integers
+        self.unique_characters = sorted(self.df['class_name'].unique())
+        self.class_name_to_id = {self.unique_characters[i]: i for i in range(self.num_classes())}
+        self.df = self.df.assign(class_id=self.df['class_name'].apply(lambda c: self.class_name_to_id[c]))
+
+        # Create dicts
+        self.datasetid_to_filepath = self.df.to_dict()['filepath']
+        self.datasetid_to_class_id = self.df.to_dict()['class_id']
+        crop_ = [torchvision.transforms.CenterCrop, torchvision.transforms.RandomCrop, torchvision.transforms.RandomResizedCrop]
+        crop_select = crop_[resize[2]](self.resize)
+        
+
+        # self.transforms = torchvision.transforms.Compose([torchvision.transforms.ColorJitter(brightness=0.4, saturation=0.4, hue=0.4), 
+        #                                                 torchvision.transforms.RandomRotation(15), 
+        #                                                 torchvision.transforms.RandomHorizontalFlip(), 
+        #                                                 crop_select,
+        #                                                 torchvision.transforms.ToTensor(),
+        #                                                 torchvision.transforms.Normalize(mean=[0.485, 0.456, 0.406], std=[0.229, 0.224, 0.225])
+        #                                                 ]) # 
+
+        # Setup transforms
+        self.resize = (224, 224)
+        self.transform = transforms.Compose([
+            transforms.CenterCrop(224),
+            transforms.Resize(84),
+            transforms.ToTensor(),
+            transforms.Normalize(mean=[0.485, 0.456, 0.406],
+                                 std=[0.229, 0.224, 0.225])
+        ])
+
+    def __getitem__(self, item):
+        instance = Image.open(self.datasetid_to_filepath[item])
+        img = pad_(self.resize[0], self.resize[1],  img) 
+        instance = self.transform(instance)
+        label = self.datasetid_to_class_id[item]
+        return instance, label
+
+    def __len__(self):
+        return len(self.df)
+
+    def num_classes(self):
+        return len(self.df['class_name'].unique())
+
+    @staticmethod
+    def index_subset(subset):
+        """Index a subset by looping through all of its files and recording relevant information.
+
+        # Arguments
+            subset: Name of the subset
+
+        # Returns
+            A list of dicts containing information about all the image files in a particular subset of the
+            Omniglot dataset dataset
+        """
+        images = []
+        print('Indexing {}...'.format(subset))
+        # Quick first pass to find total for tqdm bar
+        subset_len = 0
+        # import pdb; pdb.set_trace()
+        dataset = 'fashion-dataset-small'
+        cwd = os.getcwd()
+
+        dict_path = os.path.join(cwd,'data', dataset, 'data_fewshot.json')
+        with open(dict_path, 'r') as f:
+            data_ = json.load(f)
+
+        data_subs = data_[subset]
+
+        progress_bar = tqdm(total=len(data_subs['image_list']))
+        images = [ {'subset': subset, 'class_name': cls_, 'filepath': os.path.join(DATA_PATH_Fashion, fp_) } for fp_, cls_ in zip(data_subs['image_list'], data_subs['class_list'] ) ]
+
+        progress_bar.close()
+        return images
+
 
 
 class MiniImageNet(Dataset):
