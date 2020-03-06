@@ -15,7 +15,7 @@ class NShotTaskSampler(Sampler):
                  k: int = None,
                  q: int = None,
                  num_tasks: int = 1,
-                 fixed_tasks: List[Iterable[int]] = None):
+                 fixed_tasks: List[Iterable[int]] = None, eval_classes: List[Iterable[str]] = None):
         """PyTorch Sampler subclass that generates batches of n-shot, k-way, q-query tasks.
 
         Each n-shot task contains a "support set" of `k` sets of `n` samples and a "query set" of `k` sets
@@ -46,6 +46,7 @@ class NShotTaskSampler(Sampler):
         self.n = n
         self.q = q
         self.fixed_tasks = fixed_tasks
+        self.eval_classes = eval_classes
 
         self.i_task = 0
 
@@ -61,7 +62,11 @@ class NShotTaskSampler(Sampler):
             for task in range(self.num_tasks):
                 if self.fixed_tasks is None:
                     # Get random classes
-                    episode_classes = np.random.choice(self.dataset.df['class_id'].unique(), size=self.k, replace=False)
+                    if self.eval_classes is None:
+                        episode_classes = np.random.choice(self.dataset.df['class_id'].unique(), size=self.k, replace=False)
+                    else:
+                        import pdb; pdb.set_trace()
+                        # episode_classes = 
                 else:
                     # Loop through classes in fixed_tasks
                     episode_classes = self.fixed_tasks[self.i_task % len(self.fixed_tasks)]
