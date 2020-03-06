@@ -1,6 +1,6 @@
 from torch.utils.data import Dataset
 import torch
-from PIL import Image
+from PIL import Image, ImageOps
 from torchvision import transforms
 from skimage import io
 from tqdm import tqdm
@@ -123,8 +123,8 @@ class FashionDataset(Dataset):
         # Create dicts
         self.datasetid_to_filepath = self.df.to_dict()['filepath']
         self.datasetid_to_class_id = self.df.to_dict()['class_id']
-        crop_ = [torchvision.transforms.CenterCrop, torchvision.transforms.RandomCrop, torchvision.transforms.RandomResizedCrop]
-        crop_select = crop_[resize[2]](self.resize)
+        #crop_ = [torchvision.transforms.CenterCrop, torchvision.transforms.RandomCrop, torchvision.transforms.RandomResizedCrop]
+        #crop_select = crop_[resize[2]](self.resize)
         
 
         # self.transforms = torchvision.transforms.Compose([torchvision.transforms.ColorJitter(brightness=0.4, saturation=0.4, hue=0.4), 
@@ -147,7 +147,7 @@ class FashionDataset(Dataset):
 
     def __getitem__(self, item):
         instance = Image.open(self.datasetid_to_filepath[item])
-        img = pad_(self.resize[0], self.resize[1],  img) 
+        instance = pad_(224, 224,  instance) 
         instance = self.transform(instance)
         label = self.datasetid_to_class_id[item]
         return instance, label

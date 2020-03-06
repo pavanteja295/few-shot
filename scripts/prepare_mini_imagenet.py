@@ -16,7 +16,7 @@ import os
 from config import DATA_PATH
 from few_shot.utils import mkdir, rmdir
 
-
+import pdb; pdb.set_trace()
 # Clean up folders
 rmdir(DATA_PATH + '/miniImageNet/images_background')
 rmdir(DATA_PATH + '/miniImageNet/images_evaluation')

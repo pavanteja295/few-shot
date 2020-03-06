@@ -5,7 +5,7 @@ from torch.utils.data import DataLoader
 from torch import nn
 import argparse
 
-from few_shot.datasets import OmniglotDataset, MiniImageNet
+from few_shot.datasets import OmniglotDataset, MiniImageNet, FashionDataset
 from few_shot.core import NShotTaskSampler, create_nshot_task_label, EvaluateFewShot
 from few_shot.maml import meta_gradient_step
 from few_shot.models import FewShotClassifier
@@ -38,6 +38,7 @@ parser.add_argument('--order', default=1, type=int)
 parser.add_argument('--epochs', default=50, type=int)
 parser.add_argument('--epoch-len', default=100, type=int)
 parser.add_argument('--eval-batches', default=20, type=int)
+parser.add_argument('--exp_name', default='test', type=str)
 
 args = parser.parse_args()
 
@@ -49,10 +50,14 @@ elif args.dataset == 'miniImageNet':
     dataset_class = MiniImageNet
     fc_layer_size = 1600
     num_input_channels = 3
+elif args.dataset == 'fashion-dataset':
+    dataset_class = FashionDataset
+    fc_layer_size = 1600
+    num_input_channels = 3
 else:
     raise(ValueError('Unsupported dataset'))
 
-param_str = f'{args.dataset}_order={args.order}_n={args.n}_k={args.k}_metabatch={args.meta_batch_size}_' \
+param_str = f'{args.exp_name}_exp_name_{args.dataset}_order={args.order}_n={args.n}_k={args.k}_metabatch={args.meta_batch_size}_' \
             f'train_steps={args.inner_train_steps}_val_steps={args.inner_val_steps}'
 print(param_str)
 
@@ -61,6 +66,7 @@ print(param_str)
 # Create datasets #
 ###################
 
+#import pdb; pdb.set_trace()
 background = dataset_class('background')
 background_taskloader = DataLoader(
     background,

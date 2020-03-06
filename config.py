@@ -31,7 +31,7 @@ PATH = os.path.dirname(os.path.realpath(__file__))
 
 
 
-DATA_PATH = '/home/pavanteja/workspace/IntuitionMachines/transfer_learning/few-shot/data/'
+DATA_PATH = '/home/ubuntu/pavanteja/few-shot/data'
 DATA_PATH_Fashion = '/mnt/datasets/datasets/fashion-dataset/fashion-dataset/images_resized/'
 
 EPSILON = 1e-8

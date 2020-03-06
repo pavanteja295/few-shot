@@ -5,7 +5,7 @@ import argparse
 from torch.utils.data import DataLoader
 from torch.optim import Adam
 
-from few_shot.datasets import OmniglotDataset, MiniImageNet
+from few_shot.datasets import OmniglotDataset, MiniImageNet, FashionDataset
 from few_shot.core import NShotTaskSampler, prepare_nshot_task, EvaluateFewShot
 from few_shot.matching import matching_net_episode
 from few_shot.train import fit
@@ -31,10 +31,11 @@ parser.add_argument('--n-train', default=1, type=int)
 parser.add_argument('--n-test', default=1, type=int)
 parser.add_argument('--k-train', default=5, type=int)
 parser.add_argument('--k-test', default=5, type=int)
-parser.add_argument('--q-train', default=15, type=int)
+parser.add_argument('--q-train', default=10, type=int)
 parser.add_argument('--q-test', default=1, type=int)
 parser.add_argument('--lstm-layers', default=1, type=int)
 parser.add_argument('--unrolling-steps', default=2, type=int)
+parser.add_argument('--exp_name', default='test', type=str)
 args = parser.parse_args()
 
 evaluation_episodes = 1000
@@ -50,13 +51,18 @@ elif args.dataset == 'miniImageNet':
     dataset_class = MiniImageNet
     num_input_channels = 3
     lstm_input_size = 1600
+elif args.dataset == 'fashion-dataset':
+    n_epochs = 200
+    dataset_class = FashionDataset
+    num_input_channels = 3
+    lstm_input_size = 1600
 else:
     raise(ValueError, 'Unsupported dataset')
 
-param_str = f'{args.dataset}_n={args.n_train}_k={args.k_train}_q={args.q_train}_' \
+param_str = f'{args.exp_name}_exp_name_{args.dataset}_n={args.n_train}_k={args.k_train}_q={args.q_train}_' \
             f'nv={args.n_test}_kv={args.k_test}_qv={args.q_test}_'\
             f'dist={args.distance}_fce={args.fce}'
-
+print(param_str)
 
 #########
 # Model #

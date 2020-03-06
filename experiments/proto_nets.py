@@ -61,7 +61,9 @@ else:
     # add for fashion here
     raise(ValueError, 'Unsupported dataset')
 
-param_str = f' {args.exp_name}_experiment_name_{args.dataset}_nt={args.n_train}_kt={args.k_train}_qt={args.q_train}_' \
+
+
+param_str = f'{args.exp_name}_exp_name_{args.dataset}_nt={args.n_train}_kt={args.k_train}_qt={args.q_train}_' \
             f'nv={args.n_test}_kv={args.k_test}_qv={args.q_test}'
 
 print(param_str)
