@@ -66,8 +66,8 @@ class NShotTaskSampler(Sampler):
                         episode_classes = np.random.choice(self.dataset.df['class_id'].unique(), size=self.k, replace=False)
                     else:
                         # gather class_indexes
-                        import pdb; pdb.set_trace()
-                        episode_classes = np.array([self.datase.class_name_to_id[cls_] for cls_ in self.eval_classes ])
+                        #import pdb; pdb.set_trace()
+                        episode_classes = np.array([self.dataset.class_name_to_id[cls_] for cls_ in self.eval_classes ])
                         # episode_classes = 
                 else:
                     # Loop through classes in fixed_tasks
@@ -140,6 +140,7 @@ class EvaluateFewShot(Callback):
         totals = {'loss': 0, self.metric_name: 0}
         # this would get 80 batches of the test set sampled from NshotSampler
         for batch_index, batch in enumerate(self.taskloader): # episodes per epochs
+            #import pdb; pdb.set_trace()
             x, y = self.prepare_batch(batch)
             # here x = (n_test + q_test) * k_test y = q_test * k _test
             # returns loss for the queried samples and probability scores of the queried samples
@@ -159,12 +160,15 @@ class EvaluateFewShot(Callback):
             seen += y_pred.shape[0]
 
             totals['loss'] += loss.item() * y_pred.shape[0]
+            print(categorical_accuracy(y,y_pred))
             totals[self.metric_name] += categorical_accuracy(y, y_pred) * y_pred.shape[0]
         # average out total loss and accuracy for how many samples ?
         # len(self.task_loader) * (k_way * q_test)
         logs[self.prefix + 'loss'] = totals['loss'] / seen
         logs[self.metric_name] = totals[self.metric_name] / seen
-
+#        import pdb; pdb.set_trace()
+        print(logs[self.metric_name])
+        print(logs[self.prefix + 'loss'])
 
 def prepare_nshot_task(n: int, k: int, q: int) -> Callable:
     """Typical n-shot task preprocessing.
