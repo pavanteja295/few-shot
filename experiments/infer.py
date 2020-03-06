@@ -36,6 +36,11 @@ parser.add_argument('--exp_name', default='test', type=str)
 parser.add_argument('--model_path', default='test', type=str)
 args = parser.parse_args()
 
+evaluation_episodes = 1000
+
+# how many times do we want to iterate over the whole dataset its similar to len(dataloader)
+episodes_per_epoch = 100
+
 param_str = f' {args.exp_name}_experiment_name_{args.dataset}_nt={args.n_test}_kt={args.k_test}_qt={args.q_test}_' \
             f'nv={args.n_test}_kv={args.k_test}_qv={args.q_test}'
 
@@ -59,7 +64,7 @@ else:
     # add for fashion here
     raise(ValueError, 'Unsupported dataset')
 
-
+import pdb; pdb.set_trace()
 ###################
 # Create datasets #
 ###################
@@ -73,7 +78,7 @@ background = dataset_class('background')
 evaluation = dataset_class('evaluation')
 evaluation_taskloader = DataLoader(
     evaluation,
-    batch_sampler=NShotTaskSampler(evaluation, episodes_per_epoch, args.n_test, args.k_test, args.q_test), # why is qtest needed for protonet i think its not rquired for protonet check it
+    batch_sampler=NShotTaskSampler(evaluation, episodes_per_epoch, args.n_test, args.k_test, args.q_test, fixed_tasks=[5, 2, 1, 3]), # why is qtest needed for protonet i think its not rquired for protonet check it
     num_workers=4
 )
 
