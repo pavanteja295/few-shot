@@ -87,10 +87,74 @@ evaluation_taskloader = DataLoader(
 # Model #
 #########
 model = get_few_shot_encoder(num_input_channels)
+model.load_state_dict(torch.load(args.model_path))
 model.to(device, dtype=torch.double)
 
+############
+# Training #
+############
+print(f'Training Prototypical network on {args.dataset}...')
+optimiser = Adam(model.parameters(), lr=1e-3)
+loss_fn = torch.nn.NLLLoss().cuda()
 
-model.load_state_dict(torch.load(args.model_path))
-import pdb; pdb.set_trace()
+
+def lr_schedule(epoch, lr):
+    # Drop lr every 2000 episodes
+    if epoch % drop_lr_every == 0:
+        return lr / 2
+    else:
+        return lr
+
+
+callbacks = [
+    EvaluateFewShot(
+        eval_fn=proto_net_episode,
+        num_tasks=evaluation_episodes,
+        n_shot=args.n_test,
+        k_way=args.k_test,
+        q_queries=args.q_test,
+        taskloader=evaluation_taskloader,
+        prepare_batch=prepare_nshot_task(args.n_test, args.k_test, args.q_test), # n shot task is a simple function that maps classes to [0-k]
+        distance=args.distance
+    ),
+]
+
+def infer(callbacks):
+    num_batches = 1
+    batch_size = dataloader.batch_size
+
+    # default call back averages the bach accuracy and loss
+    callbacks = CallbackList([DefaultCallback(), ] + (callbacks or []))
+    # model and all other information has been passed to call back nothing else ot be done during function calls
+    callbacks.set_model(model)
+    callbacks.set_params({
+        'loss_fn': loss_fn,
+        'optimiser': optimiser
+    })
+
+    if verbose:
+        print('Begin training...')
+
+    # creates a csv logger file
+    callbacks.on_train_begin()
+    callbacks.on_epoch_begin(1)
+    epoch_logs = {}
+    callbacks.on_epoch_end(1, epoch_logs)
+    import pdb; pdb.set_trace()
+
+
+# fit(
+#     model,
+#     optimiser,
+#     loss_fn,
+#     epochs=n_epochs,
+#     dataloader=background_taskloader,
+#     prepare_batch=prepare_nshot_task(args.n_train, args.k_train, args.q_train),
+#     callbacks=callbacks,
+#     metrics=['categorical_accuracy'],
+#     fit_function=proto_net_episode,
+#     fit_function_kwargs={'n_shot': args.n_train, 'k_way': args.k_train, 'q_queries': args.q_train, 'train': True,
+#                          'distance': args.distance},
+# )
 
 
