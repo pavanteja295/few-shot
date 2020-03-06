@@ -65,7 +65,9 @@ class NShotTaskSampler(Sampler):
                     if self.eval_classes is None:
                         episode_classes = np.random.choice(self.dataset.df['class_id'].unique(), size=self.k, replace=False)
                     else:
+                        # gather class_indexes
                         import pdb; pdb.set_trace()
+                        episode_classes = np.array([self.datase.class_name_to_id[cls_] for cls_ in self.eval_classes ])
                         # episode_classes = 
                 else:
                     # Loop through classes in fixed_tasks
