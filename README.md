@@ -43,5 +43,5 @@ Dependencies:
 
 <h3> <center> 1 shot vs 5 shot </center> </h3>
 
-![Train/Test Curves](images/1 shot vs 5 shot.png)
+![Train/Test Curves](images/1shotvs5shot.png)
 
