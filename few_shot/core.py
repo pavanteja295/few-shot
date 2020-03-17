@@ -160,15 +160,15 @@ class EvaluateFewShot(Callback):
             seen += y_pred.shape[0]
 
             totals['loss'] += loss.item() * y_pred.shape[0]
-            print(categorical_accuracy(y,y_pred))
+#            print(categorical_accuracy(y,y_pred))
             totals[self.metric_name] += categorical_accuracy(y, y_pred) * y_pred.shape[0]
         # average out total loss and accuracy for how many samples ?
         # len(self.task_loader) * (k_way * q_test)
         logs[self.prefix + 'loss'] = totals['loss'] / seen
         logs[self.metric_name] = totals[self.metric_name] / seen
 #        import pdb; pdb.set_trace()
-        print(logs[self.metric_name])
-        print(logs[self.prefix + 'loss'])
+        print('Accuracy on eval', logs[self.metric_name])
+        print('Loss on eval', logs[self.prefix + 'loss'])
 
 def prepare_nshot_task(n: int, k: int, q: int) -> Callable:
     """Typical n-shot task preprocessing.
