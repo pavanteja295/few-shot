@@ -3,7 +3,7 @@
 #k-way = (2, 5, 15)
 #n-shot = (1, 5)
 
-for k in 15;
+for k in 2 5 15;
 do 
 	for n in 1 5; 
 	do

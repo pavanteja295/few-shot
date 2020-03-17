@@ -5,7 +5,7 @@
 
 for k in 2 5 15; 
 do 
-	for n in 5; 
+	for n in 1 5; 
 	do
 	       
 	       n_trains_4=$(( $k*4))
